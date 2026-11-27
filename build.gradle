@@ -1,0 +1,112 @@
+// Shared build for the Ron's enchantment series.
+// Based on the official NeoForge 1.21.1 ModDevGradle MDK; every subproject is one standalone mod JAR.
+plugins {
+    id 'net.neoforged.moddev' version '2.0.148' apply false
+}
+
+tasks.named('wrapper', Wrapper).configure {
+    distributionType = Wrapper.DistributionType.BIN
+}
+
+subprojects {
+    apply plugin: 'java-library'
+    apply plugin: 'net.neoforged.moddev'
+
+    version = mod_version
+    group = "${mod_group_id}.${project.name}"
+
+    base {
+        // e.g. ronsfelling-1.0.0+mc1.21.1.jar
+        archivesName = mod_id
+    }
+    jar {
+        archiveVersion = "${mod_version}+mc${minecraft_version}"
+    }
+
+    // Mojang ships Java 21 to end users in 1.21.1, so mods target Java 21.
+    java.toolchain.languageVersion = JavaLanguageVersion.of(21)
+
+    // Dev-only game tests. Kept out of main so nothing test-related ships in the JAR.
+    sourceSets {
+        gametest {
+            compileClasspath += sourceSets.main.output
+            runtimeClasspath += sourceSets.main.output
+        }
+    }
+
+    neoForge {
+        version = project.neo_version
+
+        parchment {
+            mappingsVersion = project.parchment_mappings_version
+            minecraftVersion = project.parchment_minecraft_version
+        }
+
+        addModdingDependenciesTo(sourceSets.gametest)
+
+        runs {
+            client {
+                client()
+                sourceSet = sourceSets.gametest
+                systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
+                // ./gradlew :felling:runClient -PquickPlay=<world folder> jumps straight into a singleplayer world.
+                if (project.hasProperty('quickPlay')) {
+                    programArguments.addAll('--quickPlaySingleplayer', project.property('quickPlay').toString())
+                }
+            }
+            server {
+                server()
+                sourceSet = sourceSets.gametest
+                programArgument '--nogui'
+                systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
+            }
+            // Boots a headless server, runs every registered game test, then exits non-zero on failure.
+            gameTestServer {
+                type = 'gameTestServer'
+                sourceSet = sourceSets.gametest
+                systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
+            }
+            configureEach {
+                logLevel = org.slf4j.event.Level.INFO
+            }
+        }
+
+        mods {
+            "${mod_id}" {
+                sourceSet(sourceSets.main)
+                sourceSet(sourceSets.gametest)
+            }
+        }
+    }
+
+    // Expand the shared neoforge.mods.toml template with this mod's properties.
+    var generateModMetadata = tasks.register('generateModMetadata', ProcessResources) {
+        var replaceProperties = [
+                minecraft_version      : minecraft_version,
+                minecraft_version_range: minecraft_version_range,
+                neo_version            : neo_version,
+                loader_version_range   : loader_version_range,
+                mod_id                 : mod_id,
+                mod_name               : mod_name,
+                mod_license            : mod_license,
+                mod_version            : mod_version,
+                mod_authors            : mod_authors,
+                mod_description        : mod_description,
+        ]
+        inputs.properties replaceProperties
+        expand replaceProperties
+        from rootProject.file('templates')
+        into layout.buildDirectory.dir('generated/sources/modMetadata')
+    }
+    sourceSets.main.resources.srcDir generateModMetadata
+    neoForge.ideSyncTask generateModMetadata
+
+    // Ship the series license in every JAR.
+    jar {
+        from(rootProject.file('LICENSE')) { rename { "LICENSE_${mod_id}" } }
+    }
+
+    tasks.withType(JavaCompile).configureEach {
+        options.encoding = 'UTF-8'
+    }
+}

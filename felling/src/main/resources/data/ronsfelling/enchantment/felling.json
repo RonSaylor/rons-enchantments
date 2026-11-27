@@ -1,0 +1,20 @@
+{
+  "description": {
+    "translate": "enchantment.ronsfelling.felling"
+  },
+  "supported_items": "#minecraft:axes",
+  "weight": 2,
+  "max_level": 2,
+  "min_cost": {
+    "base": 5,
+    "per_level_above_first": 15
+  },
+  "max_cost": {
+    "base": 55,
+    "per_level_above_first": 15
+  },
+  "anvil_cost": 4,
+  "slots": [
+    "mainhand"
+  ]
+}

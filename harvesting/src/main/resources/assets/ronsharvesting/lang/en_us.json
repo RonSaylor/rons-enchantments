@@ -1,0 +1,4 @@
+{
+  "enchantment.ronsharvesting.harvesting": "Harvesting",
+  "enchantment.ronsharvesting.harvesting.desc": "Harvesting one ripe crop also harvests the ripe crops connected to it. Level II replants them."
+}

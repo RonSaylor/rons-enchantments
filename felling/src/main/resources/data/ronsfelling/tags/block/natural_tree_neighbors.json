@@ -1,0 +1,17 @@
+{
+  "replace": false,
+  "values": [
+    "#minecraft:replaceable_by_trees",
+    "#minecraft:small_flowers",
+    "#minecraft:tall_flowers",
+    "minecraft:vine",
+    "minecraft:cocoa",
+    "minecraft:bee_nest",
+    "minecraft:snow",
+    "minecraft:moss_carpet",
+    "minecraft:pink_petals",
+    "minecraft:sweet_berry_bush",
+    "minecraft:brown_mushroom",
+    "minecraft:red_mushroom"
+  ]
+}

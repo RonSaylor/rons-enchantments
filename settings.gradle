@@ -1,0 +1,17 @@
+pluginManagement {
+    repositories {
+        gradlePluginPortal()
+    }
+}
+
+plugins {
+    id 'org.gradle.toolchains.foojay-resolver-convention' version '1.0.0'
+}
+
+rootProject.name = 'rons-enchantments'
+
+// One subproject per mod. Each builds its own standalone JAR.
+// To add a mod: create <name>/gradle.properties + <name>/src, then include it here.
+include 'felling'
+include 'veinbreaking'
+include 'harvesting'
